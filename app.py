@@ -78,50 +78,6 @@ def record_audio(file_path, duration=5, sample_rate=22050):
 if __name__ == "__main__":
     app.run(debug=True)
 
-# Load the model
-model = torch.load("speech_emotion_model.pth")
-model.eval()
-
-# Track emotions globally
-emotion_history = []
-
-# Define emotions
-emotions = ["neutral", "happy", "sad", "angry", "fearful", "disgust", "surprised"]
-
-# Feature Extraction Function
-def extract_features_live(file_path):
-    y, sr = librosa.load(file_path, sr=None)
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
-    return np.mean(mfcc.T, axis=0).reshape(1, -1)
-
-# Microphone Recording Function
-def record_audio(file_path, duration=5, sample_rate=22050):
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-
-    audio = pyaudio.PyAudio()
-    stream = audio.open(format=FORMAT, channels=CHANNELS,
-                        rate=sample_rate, input=True,
-                        frames_per_buffer=CHUNK)
-
-    print("🎙️ Recording... Speak now!")
-    frames = []
-
-    for _ in range(0, int(sample_rate / CHUNK * duration)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    print("✅ Recording complete!")
-
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
-
-    # Save the recorded audio to WAV
-    with sf.SoundFile(file_path, 'w', samplerate=sample_rate, channels=1, subtype='PCM_16') as f:
-        f.write(b''.join(frames))
-
 # Home Route
 @app.route("/")
 def home():
