@@ -46,7 +46,7 @@ def record_and_predict():
 # Mic recording function
 def record_audio(file_path, duration=5, sample_rate=22050):
     CHUNK = 1024
-    FORMAT = pyaudio.paInt16
+    FORMAT = pyaudio.paInt16  # Ensure it's 16-bit PCM
     CHANNELS = 1
 
     audio = pyaudio.PyAudio()
@@ -57,6 +57,7 @@ def record_audio(file_path, duration=5, sample_rate=22050):
     print("🎙️ Recording... Speak now!")
     frames = []
 
+    # Read audio data in chunks
     for _ in range(0, int(sample_rate / CHUNK * duration)):
         data = stream.read(CHUNK)
         frames.append(data)
@@ -67,9 +68,11 @@ def record_audio(file_path, duration=5, sample_rate=22050):
     stream.close()
     audio.terminate()
 
-    # Save the recorded audio to WAV
-    with sf.SoundFile(file_path, 'w', samplerate=sample_rate, channels=1, subtype='PCM_16') as f:
-        f.write(b''.join(frames))
+    # Convert byte data to int16 array
+    audio_data = np.frombuffer(b''.join(frames), dtype=np.int16)
+
+    # Save as WAV file
+    sf.write(file_path, audio_data, sample_rate, subtype='PCM_16')
 
 # Run the Flask app
 if __name__ == "__main__":
