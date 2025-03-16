@@ -9,41 +9,23 @@ import matplotlib.pyplot as plt
 # Initialize Flask app
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+# Track emotions over time
+emotion_history = []
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    file = request.files["file"]
-    file_path = "uploaded_audio.wav"
-    file.save(file_path)
+# Define emotions list
+emotions = ["neutral", "happy", "sad", "angry", "fearful", "disgust", "surprised"]
 
-    features = torch.tensor(extract_features_live(file_path), dtype=torch.float32)
-    prediction = model(features)
-    emotion = torch.argmax(prediction, axis=1).item()
+# -------------------------------
+# FEATURE EXTRACTION FUNCTION
+# -------------------------------
+def extract_features_live(file_path):
+    y, sr = librosa.load(file_path, sr=None)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+    return np.mean(mfcc.T, axis=0)
 
-    emotions = ["neutral", "happy", "sad", "angry", "fearful", "disgust", "surprised"]
-    result = emotions[emotion]
-
-    return f"Predicted Emotion: {result}"
-
-# New route for live recording
-@app.route("/record", methods=["POST"])
-def record_and_predict():
-    file_path = "live_recording.wav"
-    record_audio(file_path)
-
-    features = torch.tensor(extract_features_live(file_path), dtype=torch.float32)
-    prediction = model(features)
-    emotion = torch.argmax(prediction, axis=1).item()
-
-    emotions = ["neutral", "happy", "sad", "angry", "fearful", "disgust", "surprised"]
-    result = emotions[emotion]
-
-    return f"Predicted Emotion (Live): {result}"
-
-# Mic recording function
+# -------------------------------
+# MICROPHONE RECORDING FUNCTION
+# -------------------------------
 def record_audio(file_path, duration=5, sample_rate=22050):
     CHUNK = 1024
     FORMAT = pyaudio.paInt16  # Ensure it's 16-bit PCM
@@ -74,22 +56,25 @@ def record_audio(file_path, duration=5, sample_rate=22050):
     # Save as WAV file
     sf.write(file_path, audio_data, sample_rate, subtype='PCM_16')
 
-# Run the Flask app
-if __name__ == "__main__":
-    app.run(debug=True)
+
+# -------------------------------
+# ROUTES
+# -------------------------------
 
 # Home Route
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# Route to Predict Emotion from File
+
+# Route to Predict Emotion from Uploaded File
 @app.route("/predict", methods=["POST"])
 def predict():
     file = request.files["file"]
     file_path = "uploaded_audio.wav"
     file.save(file_path)
 
+    # Extract features and make a prediction
     features = torch.tensor(extract_features_live(file_path), dtype=torch.float32)
     prediction = model(features)
     emotion = torch.argmax(prediction, axis=1).item()
@@ -101,12 +86,14 @@ def predict():
 
     return f"Predicted Emotion: {result}"
 
+
 # Route to Record Audio and Predict Emotion
 @app.route("/record", methods=["POST"])
 def record_and_predict():
     file_path = "live_recording.wav"
     record_audio(file_path)
 
+    # Extract features and make a prediction
     features = torch.tensor(extract_features_live(file_path), dtype=torch.float32)
     prediction = model(features)
     emotion = torch.argmax(prediction, axis=1).item()
@@ -118,7 +105,8 @@ def record_and_predict():
 
     return f"Predicted Emotion (Live): {result}"
 
-# Route to Get Emotion History and Plot Graph
+
+# Route to Generate and Display Emotion Tracking Graph
 @app.route("/emotion_graph")
 def emotion_graph():
     if not emotion_history:
@@ -139,6 +127,9 @@ def emotion_graph():
 
     return render_template("graph.html", img_url="/static/emotion_graph.png")
 
-# Run Flask App
+
+# -------------------------------
+# RUN FLASK APP
+# -------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
