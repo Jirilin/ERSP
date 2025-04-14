@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Graph</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            text-align: center;
+            padding: 40px;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: #4caf50;
+            margin-bottom: 30px;
+        }
+
+        img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        img:hover {
+            transform: scale(1.05);
+        }
+
+        a {
+            display: inline-block;
+            font-size: 1.2rem;
+            padding: 12px 24px;
+            background-color: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h2>📊 Emotion Graph</h2>
+    <img src="{{ url_for('static', filename='emotion_graph.png') }}" alt="Emotion Graph">
+    <br>
+    <a href="{{ url_for('home') }}">🔙 Go Back</a>
+</body>
+</html>
